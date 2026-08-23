@@ -1,0 +1,49 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: mbm
+      POSTGRES_PASSWORD: mbm_dev_password
+      POSTGRES_DB: minute_by_minute
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: mbm_minio
+      MINIO_ROOT_PASSWORD: mbm_minio_password
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://mbm:mbm_dev_password@postgres:5432/minute_by_minute
+      S3_ENDPOINT: http://minio:9000
+      S3_ACCESS_KEY: mbm_minio
+      S3_SECRET_KEY: mbm_minio_password
+      S3_BUCKET: mbm-media
+      S3_REGION: us-east-1
+      S3_FORCE_PATH_STYLE: "true"
+    depends_on:
+      - postgres
+      - minio
+    volumes:
+      - worker_tmp:/tmp/mbm
+
+volumes:
+  postgres_data:
+  minio_data:
+  worker_tmp:

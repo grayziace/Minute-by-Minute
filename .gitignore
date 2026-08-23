@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+.next/
+dist/
+
+# Generated
+apps/web/public/sw.js
+apps/web/public/sw.js.map
+
+# Environment
+.env
+.env.local
+.env*.local
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Drizzle
+apps/web/drizzle/meta/
+
+# Docker
+worker_tmp/
+
+# Logs
+*.log
