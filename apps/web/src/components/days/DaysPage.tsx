@@ -6,8 +6,19 @@ import { db } from "@/lib/dexie/db";
 import { formatDayHeading, toDateKey, formatTime } from "@/lib/utils";
 import { StorybookShell } from "@/components/storybook/StorybookShell";
 import { HaloLoader } from "@/components/ui/HaloLoader";
+import { EditableText } from "@/components/ui/EditableText";
 import { useExperienceMode } from "@/lib/experience/mode";
 import type { MediaAsset } from "@/lib/types";
+
+async function updateEntry(
+  id: string,
+  patch: Partial<{ text: string; locationName: string; moodNote: string }>,
+) {
+  await db.entries.update(id, {
+    ...patch,
+    updatedAt: new Date().toISOString(),
+  });
+}
 
 export function DaysPage() {
   const { isViewMode } = useExperienceMode();
@@ -93,15 +104,21 @@ export function DaysPage() {
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={media.localBlobUrl} alt="" />
                   ) : (
-                    <div className="flex h-full items-center justify-center p-2 font-hand text-sm text-[var(--ink-muted)]">
-                      {entry.text?.slice(0, 60) ?? "…"}
+                    <div className="flex h-full items-center justify-center p-2 text-sm text-[var(--ink-muted)]">
+                      <EditableText
+                        value={entry.text ?? ""}
+                        onSave={(text) => updateEntry(entry.id, { text })}
+                        placeholder="Add a note…"
+                        className="text-sm text-center"
+                        multiline
+                      />
                     </div>
                   )}
                 </div>
               );
             })}
             {!dayEntries.length && (
-              <p className="col-span-full font-hand text-lg text-[var(--ink-muted)] py-12 text-center">
+              <p className="col-span-full text-base text-[var(--ink-muted)] py-12 text-center">
                 A quiet day — waiting for its first moment.
               </p>
             )}
@@ -124,16 +141,20 @@ export function DaysPage() {
                       className="mb-2 h-16 w-24 object-cover polaroid"
                     />
                   )}
-                  {entry.text && (
-                    <p className={entry.text.length < 50 ? "font-hand text-base" : "font-serif text-sm"}>
-                      {entry.text}
-                    </p>
-                  )}
-                  {entry.locationName && (
-                    <p className="mt-1 text-[0.5rem] uppercase tracking-widest text-[var(--ink-muted)]">
-                      {entry.locationName}
-                    </p>
-                  )}
+                  <EditableText
+                    value={entry.text ?? ""}
+                    onSave={(text) => updateEntry(entry.id, { text })}
+                    placeholder="What happened here?"
+                    className="text-sm text-[var(--ink-soft)]"
+                    multiline
+                  />
+                  <EditableText
+                    value={entry.locationName ?? ""}
+                    onSave={(locationName) => updateEntry(entry.id, { locationName })}
+                    placeholder="Location"
+                    className="mt-1 text-[0.5rem] uppercase tracking-widest text-[var(--ink-muted)]"
+                    as="span"
+                  />
                 </div>
               </div>
             );

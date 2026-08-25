@@ -7,12 +7,19 @@ import { db } from "@/lib/dexie/db";
 import { toDateKey, formatNowDayUpper, formatNowDateUpper, formatNowTime } from "@/lib/utils";
 import { StorybookShell } from "@/components/storybook/StorybookShell";
 import { IllustratedScene } from "@/components/storybook/IllustratedScene";
+import { EditableText } from "@/components/ui/EditableText";
 import { useExperienceMode } from "@/lib/experience/mode";
-import type { MediaAsset } from "@/lib/types";
+import { usePageNote, PAGE_NOTES } from "@/lib/page-notes";
 
 export function NowPage() {
   const [now, setNow] = useState(() => new Date());
   const { isViewMode, canEdit } = useExperienceMode();
+
+  const mood = usePageNote(PAGE_NOTES.nowMood, "curious, light, excited");
+  const pinned = usePageNote(PAGE_NOTES.nowPinned, "The sun feels so beautiful here today.");
+  const prompt = usePageNote(PAGE_NOTES.nowPrompt, "What is happening here?");
+  const subprompt = usePageNote(PAGE_NOTES.nowSubprompt, "Notice this moment.");
+  const locationNote = usePageNote(PAGE_NOTES.nowLocation, "");
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);
@@ -42,6 +49,7 @@ export function NowPage() {
     return withLocation[0]?.locationName ?? "China";
   }, []);
 
+  const locationPlaceholder = lastLocation ?? "China";
   const bgMedia = recentMedia?.[0];
   const count = entries?.length ?? 0;
 
@@ -51,30 +59,33 @@ export function NowPage() {
         <aside className="now-spread__left">
           <p className="now-spread__day">{formatNowDayUpper(now)}</p>
           <p className="now-spread__date">{formatNowDateUpper(now)}</p>
-          <p className="now-spread__time">
-            {formatNowTime(now)}
-            <span className="now-spread__time-stars" aria-hidden>
-              <span className="now-spread__star" />
-              <span className="now-spread__star" />
-              <span className="now-spread__star" />
-            </span>
-          </p>
+          <p className="now-spread__time">{formatNowTime(now)}</p>
           <p className="now-spread__location">
-            <svg className="now-spread__pin" viewBox="0 0 10 10" fill="currentColor" aria-hidden>
-              <path d="M5 0C3.3 0 2 1.3 2 3c0 2.2 3 7 3 7s3-4.8 3-7c0-1.7-1.3-3-3-3zm0 4a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
-            {lastLocation ?? "China"}
+            <EditableText
+              value={locationNote.value}
+              onSave={locationNote.save}
+              placeholder={locationPlaceholder}
+              className="now-spread__location-text"
+              as="span"
+            />
           </p>
-          <p className="now-spread__prompt">
-            {isViewMode ? "You are here, in this chapter." : "What is happening here?"}
-          </p>
-          <p className="now-spread__subprompt">
-            {isViewMode ? "A moment from the archive." : "Notice this moment."}
-          </p>
+          <EditableText
+            value={prompt.value}
+            onSave={prompt.save}
+            placeholder="What is happening here?"
+            className="now-spread__prompt"
+            multiline
+          />
+          <EditableText
+            value={subprompt.value}
+            onSave={subprompt.save}
+            placeholder="Notice this moment."
+            className="now-spread__subprompt"
+          />
           {canEdit && (
             <Link href="/add" className="now-spread__capture edit-only">
               <span className="now-spread__orb" />
-              <span className="now-spread__capture-label">capture this moment</span>
+              <span className="now-spread__capture-label">Capture this moment</span>
             </Link>
           )}
         </aside>
@@ -87,56 +98,82 @@ export function NowPage() {
             />
           </div>
 
-          <div className="paper-note paper-note--taped now-mood-note font-hand">
-            <p className="text-[0.65rem] uppercase tracking-widest text-[var(--ink-muted)]">Today&apos;s mood</p>
-            <p className="mt-1 text-sm">curious, light, excited</p>
+          <div className="paper-note paper-note--taped now-mood-note">
+            <p className="storybook-widget__title">Today&apos;s mood</p>
+            <EditableText
+              value={mood.value}
+              onSave={mood.save}
+              placeholder="How does today feel?"
+              className="mt-1 text-sm text-[var(--ink-soft)]"
+            />
           </div>
 
-          <div className="paper-note paper-note--pinned now-pinned-note font-hand">
-            <p className="text-sm italic">&ldquo;The sun feels so beautiful here today.&rdquo;</p>
+          <div className="paper-note paper-note--pinned now-pinned-note">
+            <EditableText
+              value={pinned.value}
+              onSave={pinned.save}
+              placeholder="A note about right now…"
+              className="text-sm text-[var(--ink-soft)]"
+              multiline
+            />
           </div>
 
           {count > 0 && (
             <div className="now-moments-strip">
               {entries!.slice(-5).map((e, i) => (
-                <span
+                <Link
                   key={e.id}
+                  href={canEdit ? `/add?edit=${e.id}` : `/days/${todayKey}`}
                   className="now-moment-chip"
                   style={{ "--rot": `${(i - 2) * 1.5}deg` } as React.CSSProperties}
                 >
                   {e.text?.slice(0, 24) ?? "moment"}
-                </span>
+                </Link>
               ))}
             </div>
           )}
         </section>
       </div>
 
-      {/* Bottom widgets like the design mockup */}
       <div className="widget-row memory-appear" style={{ animationDelay: "0.15s" }}>
         <div className="storybook-widget">
           <p className="storybook-widget__title">Frame</p>
-          <p className="font-hand text-sm text-[var(--ink-soft)]">Favourite photographs from your days.</p>
-          <Link href="/frame" className="storybook-widget__link">view gallery →</Link>
+          <p className="text-sm text-[var(--ink-soft)]">Favourite photographs from your days.</p>
+          <Link href="/frame" className="storybook-widget__link">View gallery</Link>
         </div>
         <div className="storybook-widget">
           <p className="storybook-widget__title">Video diary</p>
-          <p className="font-hand text-sm text-[var(--ink-soft)]">Finished vlogs from your raw clips.</p>
-          <Link href="/video" className="storybook-widget__link">view episodes →</Link>
+          <p className="text-sm text-[var(--ink-soft)]">Finished vlogs from your raw clips.</p>
+          <Link href="/video" className="storybook-widget__link">View episodes</Link>
         </div>
         <div className="storybook-widget">
           <p className="storybook-widget__title">Story</p>
-          <p className="font-hand text-sm text-[var(--ink-soft)]">Manga chapters of your days.</p>
-          <Link href="/story" className="storybook-widget__link">open stories →</Link>
+          <p className="text-sm text-[var(--ink-soft)]">Manga chapters of your days.</p>
+          <Link href="/story" className="storybook-widget__link">Open stories</Link>
         </div>
       </div>
 
-      <div className="me-banner memory-appear" style={{ animationDelay: "0.25s" }}>
-        <p className="me-banner__text">
-          You seem happiest on days when you explore somewhere new, without a plan.
-        </p>
-        <Link href="/me" className="me-banner__cta">explore insights →</Link>
-      </div>
+      <MeBannerInline />
     </StorybookShell>
+  );
+}
+
+function MeBannerInline() {
+  const insight = usePageNote(
+    PAGE_NOTES.meInsight,
+    "You seem happiest on days when you explore somewhere new, without a plan.",
+  );
+
+  return (
+    <div className="me-banner memory-appear" style={{ animationDelay: "0.25s" }}>
+      <EditableText
+        value={insight.value}
+        onSave={insight.save}
+        placeholder="An observation about you…"
+        className="me-banner__text flex-1"
+        multiline
+      />
+      <Link href="/me" className="me-banner__cta">Explore insights</Link>
+    </div>
   );
 }

@@ -1,27 +1,14 @@
 import type { Metadata, Viewport } from "next";
-import { Instrument_Sans, Cormorant_Garamond, Caveat } from "next/font/google";
+import { Instrument_Sans } from "next/font/google";
 import "./globals.css";
 import "./storybook.css";
 import { AppProviders } from "@/components/AppProviders";
 import { SyncIndicator } from "@/components/layout/SyncIndicator";
-import { ExperienceToggle } from "@/components/layout/ExperienceToggle";
 import { ViewModeBanner } from "@/components/layout/ViewModeBanner";
 
 const instrument = Instrument_Sans({
   variable: "--font-instrument",
   subsets: ["latin"],
-});
-
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
-
-const caveat = Caveat({
-  variable: "--font-caveat",
-  subsets: ["latin"],
-  weight: ["400", "500"],
 });
 
 export const metadata: Metadata = {
@@ -51,13 +38,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${instrument.variable} ${cormorant.variable} ${caveat.variable} h-full`}
+      className={`${instrument.variable} h-full`}
       data-experience="edit"
     >
       <body className="min-h-full antialiased">
         <AppProviders>
           <ViewModeBanner />
-          <ExperienceToggle />
           <SyncIndicator />
           {children}
         </AppProviders>

@@ -14,7 +14,7 @@ export function VideoDiaryPage() {
           <p className="spread-subtitle">Finished episodes from your raw footage.</p>
         </header>
         <div className="storybook-widget mb-4">
-          <p className="font-hand text-sm italic text-[var(--ink-soft)]">
+          <p className="text-sm text-[var(--ink-soft)]">
             {canEdit
               ? "Upload clips throughout the day, then ask the editor to make today's vlog."
               : "Finished episodes from the archive."}
@@ -27,7 +27,7 @@ export function VideoDiaryPage() {
         </div>
         <div className="paper-note paper-note--taped max-w-md rotate-1">
           <p className="storybook-widget__title">Episode 014</p>
-          <p className="font-serif text-lg mt-1">Getting lost again</p>
+          <p className="text-lg font-medium mt-1">Getting lost again</p>
           <p className="text-[0.55rem] text-[var(--ink-muted)] mt-1">05:42 · placeholder</p>
         </div>
       </div>

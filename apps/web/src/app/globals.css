@@ -57,8 +57,8 @@
   --color-secondary: var(--secondary);
   --color-border: var(--border);
   --font-display: var(--font-instrument);
-  --font-serif: var(--font-cormorant);
-  --font-hand: var(--font-caveat);
+  --font-serif: var(--font-instrument);
+  --font-hand: var(--font-instrument);
 }
 
 @keyframes drift {
@@ -100,16 +100,10 @@ body {
   min-height: 100dvh;
 }
 
-.font-serif {
-  font-family: var(--font-cormorant), Georgia, serif;
-}
-
-.font-display {
-  font-family: var(--font-instrument), system-ui, sans-serif;
-}
-
+.font-serif,
+.font-display,
 .font-hand {
-  font-family: var(--font-caveat), cursive;
+  font-family: var(--font-instrument), system-ui, sans-serif;
 }
 
 ::selection {
