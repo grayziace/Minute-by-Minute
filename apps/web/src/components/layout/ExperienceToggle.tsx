@@ -2,39 +2,33 @@
 
 import { usePathname } from "next/navigation";
 import { useExperienceMode } from "@/lib/experience/mode";
-import { cn } from "@/lib/utils";
 
 export function ExperienceToggle() {
   const pathname = usePathname();
-  const { mode, setMode } = useExperienceMode();
-  const onNow = pathname === "/";
+  const { mode, setMode, isOwner, viewLocked } = useExperienceMode();
+
+  if (pathname.startsWith("/login")) return null;
+
+  /** Only the signed-in owner can switch modes */
+  if (!isOwner || viewLocked) return null;
 
   return (
-    <div
-      className={cn(
-        "experience-toggle fixed top-[max(1rem,env(safe-area-inset-top))] right-5 z-50",
-        onNow && "experience-toggle--on-now",
-      )}
-    >
+    <div className="experience-toggle" aria-label="Edit or preview visitor view">
       <button
         type="button"
         onClick={() => setMode("edit")}
-        className={cn(
-          "experience-toggle__link",
-          mode === "edit" && "experience-toggle__link--active",
-        )}
+        className={`experience-toggle__link ${mode === "edit" ? "experience-toggle__link--active" : ""}`}
+        title="Your editing view — capture and organise"
       >
-        Archive
+        Edit
       </button>
       <button
         type="button"
         onClick={() => setMode("view")}
-        className={cn(
-          "experience-toggle__link",
-          mode === "view" && "experience-toggle__link--active",
-        )}
+        className={`experience-toggle__link ${mode === "view" ? "experience-toggle__link--active" : ""}`}
+        title="Preview what family and friends see"
       >
-        Experience
+        Visitor view
       </button>
     </div>
   );

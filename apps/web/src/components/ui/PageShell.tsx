@@ -1,6 +1,7 @@
 "use client";
 
-import { LuminousWorld, type LuminousPhase } from "@/components/ui/LuminousWorld";
+import { EtherealWorld, type EtherealPhase } from "@/components/ui/EtherealWorld";
+import { SparkleField } from "@/components/ui/SparkleField";
 import { cn } from "@/lib/utils";
 
 interface PageShellProps {
@@ -9,7 +10,9 @@ interface PageShellProps {
   layout?: "full" | "narrow" | "immersive-scroll";
   memoryUrl?: string | null;
   memoryIsVideo?: boolean;
-  luminousPhase?: LuminousPhase;
+  etherealPhase?: EtherealPhase;
+  sparkles?: boolean;
+  variant?: "pearl" | "moon";
 }
 
 export function PageShell({
@@ -18,23 +21,29 @@ export function PageShell({
   layout = "narrow",
   memoryUrl,
   memoryIsVideo,
-  luminousPhase = "open",
+  etherealPhase = "open",
+  sparkles = true,
+  variant = "pearl",
 }: PageShellProps) {
   const isFull = layout === "full" || layout === "immersive-scroll";
 
   return (
     <div className={cn("relative min-h-[100dvh] w-full", isFull && "overflow-x-hidden")}>
       {isFull ? (
-        <LuminousWorld
-          phase={luminousPhase}
-          memoryUrl={memoryUrl}
-          memoryIsVideo={memoryIsVideo}
-        />
+        <>
+          <EtherealWorld
+            phase={etherealPhase}
+            memoryUrl={memoryUrl}
+            memoryIsVideo={memoryIsVideo}
+            variant={variant}
+          />
+          {sparkles && <SparkleField />}
+        </>
       ) : (
-        <div className="angel-atmosphere fixed inset-0 -z-10" aria-hidden>
-          <div className="angel-orb angel-orb--ice h-[320px] w-[320px] -left-20 top-0" />
-          <div className="angel-orb angel-orb--blush h-[280px] w-[280px] -right-16 top-32" />
-          <div className="angel-orb angel-orb--lavender h-[360px] w-[360px] bottom-0 left-1/3" />
+        <div className="ethereal-atmosphere fixed inset-0 -z-10" aria-hidden>
+          <div className="ethereal-atmosphere__orb ethereal-atmosphere__orb--ice" />
+          <div className="ethereal-atmosphere__orb ethereal-atmosphere__orb--blush" />
+          <div className="ethereal-atmosphere__orb ethereal-atmosphere__orb--gold" />
         </div>
       )}
 

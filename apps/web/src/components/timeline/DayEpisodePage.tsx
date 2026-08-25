@@ -36,7 +36,7 @@ export function DayEpisodePage({ date }: { date: string }) {
     <PageShell layout="immersive-scroll" className="max-w-none pb-24 pt-0 mx-auto max-w-4xl px-5 md:px-12">
       <header className="sticky top-0 z-20 px-5 py-6 glass-strong">
         <Link
-          href="/timeline"
+          href="/days"
           className="text-[10px] uppercase tracking-[0.2em] text-secondary hover:text-ice-deep"
         >
           ← Timeline

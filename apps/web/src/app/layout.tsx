@@ -1,11 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Instrument_Sans, Cormorant_Garamond, Caveat } from "next/font/google";
 import "./globals.css";
+import "./storybook.css";
 import { AppProviders } from "@/components/AppProviders";
-import { BottomNav } from "@/components/layout/BottomNav";
-import { FloatingAddButton } from "@/components/layout/FloatingAddButton";
 import { SyncIndicator } from "@/components/layout/SyncIndicator";
 import { ExperienceToggle } from "@/components/layout/ExperienceToggle";
+import { ViewModeBanner } from "@/components/layout/ViewModeBanner";
 
 const instrument = Instrument_Sans({
   variable: "--font-instrument",
@@ -26,7 +26,7 @@ const caveat = Caveat({
 
 export const metadata: Metadata = {
   title: "Minute by Minute",
-  description: "A cinematic archive of present moments.",
+  description: "A living illustrated storybook of your life.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -36,7 +36,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#f5f8ff",
+  themeColor: "#f4ead8",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -54,13 +54,12 @@ export default function RootLayout({
       className={`${instrument.variable} ${cormorant.variable} ${caveat.variable} h-full`}
       data-experience="edit"
     >
-      <body className="min-h-full flex flex-col antialiased">
+      <body className="min-h-full antialiased">
         <AppProviders>
+          <ViewModeBanner />
           <ExperienceToggle />
           <SyncIndicator />
-          <div className="flex-1">{children}</div>
-          <BottomNav />
-          <FloatingAddButton />
+          {children}
         </AppProviders>
       </body>
     </html>

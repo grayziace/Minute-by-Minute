@@ -5,10 +5,17 @@ import Link from "next/link";
 import { db } from "@/lib/dexie/db";
 import { formatDayHeading, toDateKey, hashIndex } from "@/lib/utils";
 import { PageShell } from "@/components/ui/PageShell";
-import { GlassPanel } from "@/components/ui/GlassPanel";
+import { SparkleField } from "@/components/ui/SparkleField";
 import { HaloLoader } from "@/components/ui/HaloLoader";
 
-export function TimelinePage() {
+interface TimelinePageProps {
+  variant?: "timeline" | "days";
+}
+
+export function TimelinePage({ variant = "timeline" }: TimelinePageProps) {
+  const isDays = variant === "days";
+  const dayHref = (date: string) => (isDays ? `/days/${date}` : `/timeline/${date}`);
+
   const days = useLiveQuery(async () => {
     const entries = await db.entries.orderBy("recordedAt").reverse().toArray();
     const map = new Map<string, { count: number; preview: string | null }>();
@@ -38,52 +45,47 @@ export function TimelinePage() {
   }
 
   return (
-    <PageShell>
-      <header className="mb-10 memory-appear">
-        <h1 className="font-serif text-3xl font-light tracking-wide text-gradient-angel">
-          Timeline
-        </h1>
-        <p className="mt-2 text-sm text-muted">Each day is an episode.</p>
+    <PageShell layout="immersive-scroll" sparkles={false} className="days-page mx-auto max-w-lg px-5 pt-12">
+      <SparkleField />
+      <header className="days-page__header memory-appear">
+        <h1 className="days-page__title font-serif">{isDays ? "Days" : "Timeline"}</h1>
+        <p className="days-page__subtitle">
+          {isDays ? "Walk back through your life, one day at a time." : "Each day is an episode."}
+        </p>
       </header>
 
-      <div className="space-y-4">
+      <div className="days-list">
         {days.map((day, i) => (
           <Link
             key={day.date}
-            href={`/timeline/${day.date}`}
-            className="memory-appear block"
+            href={dayHref(day.date)}
+            className="day-card memory-appear group"
             style={{ animationDelay: `${i * 0.05}s` }}
           >
-            <GlassPanel
-              className="group px-5 py-5 transition-all duration-300 hover:shadow-[0_12px_40px_rgba(140,180,230,0.15)]"
-              strong={hashIndex(day.date, 4) === 0}
-            >
+            <span className="day-card__shimmer" aria-hidden />
+            <div className="day-card__inner">
               <div className="flex items-baseline justify-between gap-4">
-                <h2 className="font-display text-[11px] tracking-[0.2em] text-foreground group-hover:text-ice-deep">
+                <h2 className="day-card__date font-display">
                   {formatDayHeading(`${day.date}T12:00:00`)}
                 </h2>
-                <span className="text-[10px] tabular-nums text-muted">
+                <span className="day-card__count">
                   {day.count} {day.count === 1 ? "moment" : "moments"}
                 </span>
               </div>
               {day.preview ? (
-                <p className="mt-3 line-clamp-2 font-serif text-sm text-foreground-soft">
-                  {day.preview}
-                </p>
+                <p className="day-card__preview font-serif">{day.preview}</p>
               ) : (
-                <p className="mt-3 font-serif text-sm italic text-muted">Visual day</p>
+                <p className="day-card__preview day-card__preview--empty font-hand">Visual day</p>
               )}
-            </GlassPanel>
+            </div>
           </Link>
         ))}
 
         {!days.length && (
-          <GlassPanel className="py-16 text-center">
-            <p className="font-serif text-lg italic text-muted">
-              The archive is empty.
-            </p>
-            <p className="mt-2 text-sm">Start with now.</p>
-          </GlassPanel>
+          <div className="day-card day-card--empty memory-appear py-16 text-center">
+            <p className="font-hand text-xl text-muted">The archive is waiting.</p>
+            <p className="mt-2 text-sm text-muted">Start with now.</p>
+          </div>
         )}
       </div>
     </PageShell>
