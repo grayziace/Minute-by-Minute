@@ -24,8 +24,8 @@ function CharactersPageInner() {
         <div className="grid md:grid-cols-2 gap-6">
           <div className="paper-note paper-note--taped">
             <p className="storybook-widget__title">Yueling</p>
-            <p className="font-serif text-xl mt-1">main character</p>
-            <p className="font-hand text-sm mt-3 text-[var(--ink-soft)]">
+            <p className="text-xl font-medium mt-1">main character</p>
+            <p className="text-sm mt-3 text-[var(--ink-soft)]">
               usually wears her hair down · looks confused when navigating somewhere new
             </p>
             <p className="text-[0.5rem] uppercase tracking-widest text-[var(--ink-muted)] mt-4">
@@ -33,7 +33,7 @@ function CharactersPageInner() {
             </p>
           </div>
           <div className="storybook-widget flex flex-col items-center justify-center min-h-[200px]">
-            <p className="font-hand text-lg text-[var(--ink-muted)]">+ new character</p>
+            <p className="text-base text-[var(--ink-muted)]">+ new character</p>
             <Link href="/archive/ai" className="storybook-widget__link mt-4">open character studio →</Link>
           </div>
         </div>

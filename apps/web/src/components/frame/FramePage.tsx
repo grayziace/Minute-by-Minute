@@ -40,7 +40,7 @@ export function FramePage() {
                 className="w-full object-cover"
               />
               {asset.capturedAt && (
-                <p className="mt-2 text-center font-hand text-xs text-[var(--ink-muted)]">
+                <p className="mt-2 text-center text-xs text-[var(--ink-muted)]">
                   {formatTime(asset.capturedAt)}
                 </p>
               )}
@@ -48,7 +48,7 @@ export function FramePage() {
           ))}
         </div>
         {!favourites?.length && (
-          <p className="font-hand text-xl text-center text-[var(--ink-muted)] py-16">
+          <p className="text-xl text-center text-[var(--ink-muted)] py-16">
             Your gallery is waiting for its first favourite.
           </p>
         )}
