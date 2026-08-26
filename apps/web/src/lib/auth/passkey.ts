@@ -6,23 +6,16 @@ import {
 import type { AuthenticatorTransportFuture } from "@simplewebauthn/server";
 import { getDb, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
+import { getRpConfig } from "@/lib/auth/rp-config";
 
-function getRpConfig() {
-  return {
-    rpName: process.env.RP_NAME ?? "Minute by Minute",
-    rpID: process.env.RP_ID ?? "localhost",
-    origin: process.env.RP_ORIGIN ?? "http://localhost:3000",
-  };
-}
-
-export async function getRegistrationOptions(userId: string) {
+export async function getRegistrationOptions(userId: string, request?: Request) {
   const db = getDb();
   const credentials = await db
     .select()
     .from(schema.passkeyCredentials)
     .where(eq(schema.passkeyCredentials.userId, userId));
 
-  const { rpName, rpID } = getRpConfig();
+  const { rpName, rpID } = getRpConfig(request);
 
   return generateRegistrationOptions({
     rpName,
@@ -41,10 +34,10 @@ export async function getRegistrationOptions(userId: string) {
   });
 }
 
-export async function getAuthenticationOptions() {
+export async function getAuthenticationOptions(request?: Request) {
   const db = getDb();
   const credentials = await db.select().from(schema.passkeyCredentials);
-  const { rpID } = getRpConfig();
+  const { rpID } = getRpConfig(request);
 
   return generateAuthenticationOptions({
     rpID,
@@ -59,6 +52,7 @@ export async function getAuthenticationOptions() {
 export async function verifyAuthentication(
   response: Parameters<typeof verifyAuthenticationResponse>[0]["response"],
   expectedChallenge: string,
+  request?: Request,
 ) {
   const db = getDb();
   const credentialId = response.id;
@@ -70,7 +64,7 @@ export async function verifyAuthentication(
 
   if (!credential) return null;
 
-  const { rpID, origin } = getRpConfig();
+  const { rpID, origin } = getRpConfig(request);
   const verification = await verifyAuthenticationResponse({
     response,
     expectedChallenge,
