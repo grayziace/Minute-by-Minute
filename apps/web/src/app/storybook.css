@@ -782,6 +782,17 @@ html[data-experience="view"] .edit-only {
   box-shadow: 0 0 20px rgba(120, 150, 200, 0.3);
 }
 
+.lens-moon__orb--signin {
+  text-decoration: none;
+  color: inherit;
+}
+
+.lens-moon__orb--signin .lens-moon__halo {
+  background: radial-gradient(circle, rgba(220, 200, 168, 0.5), transparent 70%);
+  box-shadow: 0 0 22px rgba(200, 168, 120, 0.4);
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
 .lens-moon__svg {
   width: 52px;
   height: 52px;
