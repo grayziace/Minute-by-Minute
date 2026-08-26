@@ -1,10 +1,33 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useExperienceMode, getShareViewUrl } from "@/lib/experience/mode";
 import { cn } from "@/lib/utils";
 
-function MoonIcon({ phase }: { phase: "writing" | "reading" }) {
+function MoonIcon({ phase }: { phase: "writing" | "reading" | "signin" }) {
+  if (phase === "signin") {
+    return (
+      <svg viewBox="0 0 64 64" className="lens-moon__svg" aria-hidden>
+        <defs>
+          <radialGradient id="moon-signin-glow" cx="42%" cy="38%" r="62%">
+            <stop offset="0%" stopColor="#fff6e8" />
+            <stop offset="50%" stopColor="#dcc8a8" />
+            <stop offset="100%" stopColor="#a8b8d8" />
+          </radialGradient>
+        </defs>
+        <circle cx="32" cy="32" r="22" fill="url(#moon-signin-glow)" />
+        <circle cx="25" cy="27" r="2.5" fill="rgba(255,255,255,0.3)" />
+        <path
+          d="M 38 42 L 44 48 M 44 42 L 38 48"
+          stroke="rgba(90,101,120,0.45)"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+
   if (phase === "writing") {
     return (
       <svg viewBox="0 0 64 64" className="lens-moon__svg" aria-hidden>
@@ -66,7 +89,22 @@ export function LensRibbon() {
     setShareUrl(getShareViewUrl());
   }, []);
 
-  if (!isOwner || viewLocked) return null;
+  if (viewLocked) return null;
+
+  if (!isOwner) {
+    return (
+      <aside className="lens-moon" aria-label="Sign in to edit">
+        <Link href="/login" className="lens-moon__orb lens-moon__orb--signin" title="Sign in to edit">
+          <span className="lens-moon__halo" aria-hidden />
+          <MoonIcon phase="signin" />
+        </Link>
+        <div className="lens-moon__caption">
+          <p className="lens-moon__mode">Sign in</p>
+          <p className="lens-moon__hint">Tap the moon to edit</p>
+        </div>
+      </aside>
+    );
+  }
 
   const isWriting = mode === "edit";
 
