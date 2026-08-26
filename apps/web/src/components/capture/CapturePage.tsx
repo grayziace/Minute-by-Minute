@@ -195,102 +195,113 @@ function CapturePageInner() {
 
   return (
     <StorybookShell>
-      <div className="capture-hub memory-appear">
-        <header className="capture-hub__header">
-          <h1 className="spread-title">{editId ? "Edit moment" : "Capture"}</h1>
-          <p className="spread-subtitle">Add something from any day — set the date and time below.</p>
+      <div className="page-spread capture-spread memory-appear">
+        <header className="page-spread__header capture-spread__header">
+          <h1 className="spread-title spread-title--vivid">{editId ? "Edit moment" : "Capture"}</h1>
+          <p className="spread-subtitle">
+            Every moment counts — from right now or years ago. Set when and where, then add what happened.
+          </p>
         </header>
 
-        <div className="capture-hub__when paper-note paper-note--taped">
-          <p className="storybook-widget__title">When & where</p>
-          <DateTimeFields
-            date={captureDate}
-            time={captureTime}
-            onDateChange={setCaptureDate}
-            onTimeChange={setCaptureTime}
-            location={location}
-            onLocationChange={setLocation}
-          />
+        <div className="capture-spread__layout">
+          <aside className="capture-spread__side">
+            <div className="capture-hub__when paper-note paper-note--taped paper-note--lavender">
+              <p className="storybook-widget__title">When & where</p>
+              <DateTimeFields
+                date={captureDate}
+                time={captureTime}
+                onDateChange={setCaptureDate}
+                onTimeChange={setCaptureTime}
+                location={location}
+                onLocationChange={setLocation}
+              />
+            </div>
+            <VisibilityPicker value={visibility} onChange={setVisibility} className="capture-spread__visibility" />
+          </aside>
+
+          <main className="capture-spread__main">
+            {mode === "hub" && (
+              <div className="capture-hub__grid">
+                <button type="button" className="capture-hub__tile capture-hub__tile--rose" onClick={() => photoRef.current?.click()}>
+                  <span className="capture-hub__icon">▣</span>
+                  <span className="capture-hub__label">Photo</span>
+                </button>
+                <button type="button" className="capture-hub__tile capture-hub__tile--sky" onClick={() => videoRef.current?.click()}>
+                  <span className="capture-hub__icon">▷</span>
+                  <span className="capture-hub__label">Video</span>
+                </button>
+                <button type="button" className="capture-hub__tile capture-hub__tile--peach" onClick={() => setMode("thought")}>
+                  <span className="capture-hub__icon">◦</span>
+                  <span className="capture-hub__label">Quick thought</span>
+                </button>
+                <button type="button" className="capture-hub__tile capture-hub__tile--mint" onClick={() => router.push(`/write?date=${captureDate}`)}>
+                  <span className="capture-hub__icon">✎</span>
+                  <span className="capture-hub__label">Write</span>
+                </button>
+                <button type="button" className="capture-hub__tile capture-hub__tile--gold" onClick={() => voiceRef.current?.click()}>
+                  <span className="capture-hub__icon">♪</span>
+                  <span className="capture-hub__label">Voice</span>
+                </button>
+                <button type="button" className="capture-hub__tile capture-hub__tile--lavender" onClick={() => setMode("location")}>
+                  <span className="capture-hub__icon">⌖</span>
+                  <span className="capture-hub__label">Location</span>
+                </button>
+              </div>
+            )}
+
+            {(mode === "thought" || editId) && (
+              <div className="capture-hub__panel paper-note paper-note--peach">
+                <p className="storybook-widget__title">Your words</p>
+                <textarea
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  rows={mode === "thought" ? 4 : 8}
+                  placeholder="What is happening?"
+                  className="capture-hub__textarea"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  disabled={saving || !text.trim()}
+                  className="capture-hub__save capture-hub__save--vivid"
+                  onClick={() => void saveEntry({ text: text.trim(), location })}
+                >
+                  {saving ? "Saving…" : editId ? "Update" : "Save moment"}
+                </button>
+                {status === "saved" && <p className="capture-hub__status">Saved</p>}
+                {!editId && (
+                  <button type="button" className="capture-hub__back" onClick={() => setMode("hub")}>
+                    ← Back
+                  </button>
+                )}
+              </div>
+            )}
+
+            {mode === "location" && (
+              <div className="capture-hub__panel paper-note paper-note--mint">
+                <p className="storybook-widget__title">Pin a place</p>
+                <p className="capture-panel__hint">
+                  Save where you are — type a name or use GPS for exact coordinates.
+                </p>
+                <button
+                  type="button"
+                  disabled={saving}
+                  className="capture-hub__save capture-hub__save--vivid"
+                  onClick={() => captureGeolocation()}
+                >
+                  {saving ? "Saving…" : "Save location"}
+                </button>
+                <button type="button" className="capture-hub__back" onClick={() => setMode("hub")}>
+                  ← Back
+                </button>
+              </div>
+            )}
+
+            {saving && mode === "hub" && (
+              <p className="capture-spread__saving">Uploading…</p>
+            )}
+          </main>
         </div>
-
-        {mode === "hub" && (
-          <div className="capture-hub__grid">
-            <button type="button" className="capture-hub__tile" onClick={() => photoRef.current?.click()}>
-              <span className="capture-hub__icon">▣</span>
-              <span className="capture-hub__label">Photo</span>
-            </button>
-            <button type="button" className="capture-hub__tile" onClick={() => videoRef.current?.click()}>
-              <span className="capture-hub__icon">▷</span>
-              <span className="capture-hub__label">Video</span>
-            </button>
-            <button type="button" className="capture-hub__tile" onClick={() => setMode("thought")}>
-              <span className="capture-hub__icon">◦</span>
-              <span className="capture-hub__label">Quick thought</span>
-            </button>
-            <button type="button" className="capture-hub__tile" onClick={() => router.push(`/write?date=${captureDate}`)}>
-              <span className="capture-hub__icon">✎</span>
-              <span className="capture-hub__label">Write</span>
-            </button>
-            <button type="button" className="capture-hub__tile" onClick={() => voiceRef.current?.click()}>
-              <span className="capture-hub__icon">♪</span>
-              <span className="capture-hub__label">Voice</span>
-            </button>
-            <button type="button" className="capture-hub__tile" onClick={() => setMode("location")}>
-              <span className="capture-hub__icon">⌖</span>
-              <span className="capture-hub__label">Location</span>
-            </button>
-          </div>
-        )}
-
-        {(mode === "thought" || editId) && (
-          <div className="capture-hub__panel paper-note">
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              rows={mode === "thought" ? 3 : 6}
-              placeholder="What is happening?"
-              className="capture-hub__textarea"
-              autoFocus
-            />
-            <VisibilityPicker value={visibility} onChange={setVisibility} className="mt-3" />
-            <button
-              type="button"
-              disabled={saving || !text.trim()}
-              className="capture-hub__save"
-              onClick={() => void saveEntry({ text: text.trim(), location })}
-            >
-              {saving ? "Saving…" : editId ? "Update" : "Save moment"}
-            </button>
-            {status === "saved" && <p className="capture-hub__status">Saved</p>}
-          </div>
-        )}
-
-        {mode === "location" && (
-          <div className="capture-hub__panel paper-note">
-            <p className="text-sm text-[var(--ink-soft)] mb-3">
-              Save where you are. Exact GPS is optional — you can type a place name only.
-            </p>
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="e.g. Huadu, Guangzhou"
-              className="capture-hub__location"
-            />
-            <VisibilityPicker value={visibility} onChange={setVisibility} className="mt-3" />
-            <button
-              type="button"
-              disabled={saving}
-              className="capture-hub__save"
-              onClick={() => captureGeolocation()}
-            >
-              {saving ? "Saving…" : "Save location"}
-            </button>
-          </div>
-        )}
-
-        {(mode === "hub" || mode === "photo" || mode === "video" || mode === "voice") && (
-          <VisibilityPicker value={visibility} onChange={setVisibility} className="capture-hub__visibility" />
-        )}
 
         <input ref={photoRef} type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
         <input ref={videoRef} type="file" accept="video/*" capture="environment" multiple className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
@@ -303,7 +314,9 @@ function CapturePageInner() {
 export function CapturePage() {
   return (
     <EditModeGuard>
-      <CapturePageInner />
+      <Suspense fallback={null}>
+        <CapturePageInner />
+      </Suspense>
     </EditModeGuard>
   );
 }

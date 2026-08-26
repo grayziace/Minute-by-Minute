@@ -71,7 +71,7 @@ export function DayDetailPage({ dateKey }: DayDetailPageProps) {
 
   return (
     <StorybookShell>
-      <div className="day-chapter memory-appear">
+      <div className="page-spread day-chapter memory-appear">
         <nav className="day-chapter__nav">
           <Link href="/days" className="day-chapter__back">
             ← All days
