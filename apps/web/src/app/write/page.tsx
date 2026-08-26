@@ -1,10 +1,10 @@
+import { WritePage } from "@/components/capture/WritePage";
 import { Suspense } from "react";
-import { CapturePage } from "@/components/capture/CapturePage";
 
 export default function Page() {
   return (
     <Suspense fallback={null}>
-      <CapturePage />
+      <WritePage />
     </Suspense>
   );
 }

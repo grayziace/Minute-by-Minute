@@ -5,6 +5,7 @@ import "./storybook.css";
 import { AppProviders } from "@/components/AppProviders";
 import { SyncIndicator } from "@/components/layout/SyncIndicator";
 import { ViewModeBanner } from "@/components/layout/ViewModeBanner";
+import { CaptureFab } from "@/components/layout/CaptureFab";
 
 const instrument = Instrument_Sans({
   variable: "--font-instrument",
@@ -44,6 +45,7 @@ export default function RootLayout({
       <body className="min-h-full antialiased">
         <AppProviders>
           <ViewModeBanner />
+          <CaptureFab />
           <SyncIndicator />
           {children}
         </AppProviders>

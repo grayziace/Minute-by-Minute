@@ -1,10 +1,10 @@
-import { redirect } from "next/navigation";
+import { DayDetailPage } from "@/components/days/DayDetailPage";
 
-export default async function DayRedirect({
+export default async function Page({
   params,
 }: {
   params: Promise<{ date: string }>;
 }) {
   const { date } = await params;
-  redirect(`/timeline/${date}`);
+  return <DayDetailPage dateKey={date} />;
 }

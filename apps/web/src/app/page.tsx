@@ -1,5 +1,5 @@
-import { NowPage } from "@/components/now/NowPage";
+import { HomePage } from "@/components/now/HomePage";
 
 export default function Home() {
-  return <NowPage />;
+  return <HomePage />;
 }

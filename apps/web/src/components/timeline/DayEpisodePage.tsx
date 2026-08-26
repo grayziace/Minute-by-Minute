@@ -7,19 +7,24 @@ import { dayRange, formatDayHeading } from "@/lib/utils";
 import { EntryCard } from "@/components/timeline/EntryCard";
 import type { MediaAsset } from "@/lib/types";
 import { PageShell } from "@/components/ui/PageShell";
+import { useExperienceMode } from "@/lib/experience/mode";
+import { filterEntriesForViewer, filterMediaForViewer } from "@/lib/entries-helpers";
 
 export function DayEpisodePage({ date }: { date: string }) {
+  const { isViewMode } = useExperienceMode();
   const { start, end } = dayRange(date);
 
   const entries = useLiveQuery(async () => {
-    return db.entries
+    const inDay = await db.entries
       .where("recordedAt")
       .between(start, end, true, true)
       .sortBy("recordedAt");
-  }, [start, end]);
+    return filterEntriesForViewer(inDay, isViewMode);
+  }, [start, end, isViewMode]);
 
   const mediaByEntry = useLiveQuery(async () => {
     const allMedia = await db.mediaAssets.toArray();
+    const visible = filterMediaForViewer(allMedia, isViewMode);
     const map = new Map<string, MediaAsset[]>();
     for (const m of allMedia) {
       if (!m.entryId) continue;
@@ -28,7 +33,7 @@ export function DayEpisodePage({ date }: { date: string }) {
       map.set(m.entryId, list);
     }
     return map;
-  }, []);
+  }, [isViewMode]);
 
   const isQuiet = (entries?.length ?? 0) <= 2;
 
