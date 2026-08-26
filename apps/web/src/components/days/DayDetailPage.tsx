@@ -14,6 +14,7 @@ import {
   groupEntriesByDay,
 } from "@/lib/entries-helpers";
 import { chapterNumberForDay, useDayMeta } from "@/lib/day-meta";
+import { StorySuggestionsPanel } from "@/components/days/StorySuggestionsPanel";
 import { dayRange, formatDayHeading } from "@/lib/utils";
 import type { MediaAsset } from "@/lib/types";
 
@@ -23,7 +24,7 @@ interface DayDetailPageProps {
 
 export function DayDetailPage({ dateKey }: DayDetailPageProps) {
   const { isViewMode, canEdit } = useExperienceMode();
-  const { meta, save } = useDayMeta(dateKey);
+  const { meta, save, markComplete } = useDayMeta(dateKey);
   const { start, end } = dayRange(dateKey);
 
   const allEntries = useLiveQuery(
@@ -143,6 +144,15 @@ export function DayDetailPage({ dateKey }: DayDetailPageProps) {
             </div>
           )}
         </div>
+
+        {canEdit && (
+          <StorySuggestionsPanel
+            dateKey={dateKey}
+            meta={meta}
+            entries={dayEntries}
+            onMarkComplete={markComplete}
+          />
+        )}
 
         <section className="day-chapter__moments">
           {dayEntries.length === 0 && (

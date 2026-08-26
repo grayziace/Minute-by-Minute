@@ -4,10 +4,15 @@ import { Suspense, useRef, useState, useEffect, useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createEntryLocal, updateEntryLocal } from "@/lib/sync/engine";
 import { queueFileUpload } from "@/lib/uploads/client";
-import { generateId, nowIso } from "@/lib/utils";
+import { generateId } from "@/lib/utils";
 import { StorybookShell } from "@/components/storybook/StorybookShell";
 import { EditModeGuard } from "@/components/layout/EditModeGuard";
 import { VisibilityPicker } from "@/components/ui/VisibilityPicker";
+import {
+  DateTimeFields,
+  combineDateTime,
+  splitDateTime,
+} from "@/components/ui/DateTimeFields";
 import type { Visibility } from "@/lib/types";
 import { db } from "@/lib/dexie/db";
 
@@ -27,6 +32,16 @@ function CapturePageInner() {
   const [visibility, setVisibility] = useState<Visibility>("private");
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<"idle" | "saved" | "saving">("idle");
+  const [captureDate, setCaptureDate] = useState(() => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return dateParam ?? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  });
+  const [captureTime, setCaptureTime] = useState(() => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  });
 
   const photoRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLInputElement>(null);
@@ -39,33 +54,40 @@ function CapturePageInner() {
       setText(e.text ?? "");
       setLocation(e.locationName ?? "");
       setVisibility(e.visibility);
+      const { date, time } = splitDateTime(e.recordedAt);
+      setCaptureDate(date);
+      setCaptureTime(time);
       setMode(e.text && e.text.length > 120 ? "write" : "thought");
     });
   }, [editId]);
 
-  const recordedAtForDay = useCallback(() => {
-    if (!dateParam) return nowIso();
-    return `${dateParam}T12:00:00.000Z`;
-  }, [dateParam]);
+  useEffect(() => {
+    if (dateParam && !editId) setCaptureDate(dateParam);
+  }, [dateParam, editId]);
+
+  const recordedAtIso = useCallback(() => {
+    return combineDateTime(captureDate, captureTime);
+  }, [captureDate, captureTime]);
 
   async function saveEntry(opts: { text: string; location?: string }) {
     setSaving(true);
     setStatus("saving");
-    const now = editId ? undefined : recordedAtForDay();
+    const ts = recordedAtIso();
     if (editId) {
       await updateEntryLocal(editId, {
         text: opts.text,
         locationName: opts.location?.trim() || null,
         visibility,
+        recordedAt: ts,
+        recordedAtPrecision: "exact",
       });
     } else {
       const id = generateId();
-      const ts = now ?? nowIso();
       await createEntryLocal({
         id,
         userId: "local-user",
         recordedAt: ts,
-        recordedAtPrecision: dateParam ? "approximate" : "exact",
+        recordedAtPrecision: "exact",
         text: opts.text,
         moodNote: null,
         locationName: opts.location?.trim() || null,
@@ -82,13 +104,14 @@ function CapturePageInner() {
     }
     setStatus("saved");
     setSaving(false);
-    router.push(dateParam ? `/days/${dateParam}` : "/");
+    const dayKey = captureDate;
+    router.push(dateParam || dayKey ? `/days/${dateParam ?? dayKey}` : "/");
   }
 
   async function saveLocationOnly(name: string, lat?: number, lng?: number) {
     setSaving(true);
     const id = generateId();
-    const ts = recordedAtForDay();
+    const ts = recordedAtIso();
     await createEntryLocal({
       id,
       userId: "local-user",
@@ -108,15 +131,15 @@ function CapturePageInner() {
       createdAt: ts,
     });
     setSaving(false);
-    router.push(dateParam ? `/days/${dateParam}` : "/");
+    router.push(dateParam || captureDate ? `/days/${dateParam ?? captureDate}` : "/");
   }
 
-  async function handleFiles(files: FileList | null, kind: "photo" | "video" | "voice") {
+  async function handleFiles(files: FileList | null) {
     if (!files?.length) return;
     setSaving(true);
     for (const file of Array.from(files)) {
       const id = generateId();
-      const ts = recordedAtForDay();
+      const ts = recordedAtIso();
       await createEntryLocal({
         id,
         userId: "local-user",
@@ -138,7 +161,7 @@ function CapturePageInner() {
       await queueFileUpload(file, { entryId: id, toInbox: false });
     }
     setSaving(false);
-    router.push(dateParam ? `/days/${dateParam}` : "/");
+    router.push(dateParam || captureDate ? `/days/${dateParam ?? captureDate}` : "/");
   }
 
   function captureGeolocation() {
@@ -175,8 +198,20 @@ function CapturePageInner() {
       <div className="capture-hub memory-appear">
         <header className="capture-hub__header">
           <h1 className="spread-title">{editId ? "Edit moment" : "Capture"}</h1>
-          <p className="spread-subtitle">What is happening right now?</p>
+          <p className="spread-subtitle">Add something from any day — set the date and time below.</p>
         </header>
+
+        <div className="capture-hub__when paper-note paper-note--taped">
+          <p className="storybook-widget__title">When & where</p>
+          <DateTimeFields
+            date={captureDate}
+            time={captureTime}
+            onDateChange={setCaptureDate}
+            onTimeChange={setCaptureTime}
+            location={location}
+            onLocationChange={setLocation}
+          />
+        </div>
 
         {mode === "hub" && (
           <div className="capture-hub__grid">
@@ -192,7 +227,7 @@ function CapturePageInner() {
               <span className="capture-hub__icon">◦</span>
               <span className="capture-hub__label">Quick thought</span>
             </button>
-            <button type="button" className="capture-hub__tile" onClick={() => router.push(`/write${dateParam ? `?date=${dateParam}` : ""}`)}>
+            <button type="button" className="capture-hub__tile" onClick={() => router.push(`/write?date=${captureDate}`)}>
               <span className="capture-hub__icon">✎</span>
               <span className="capture-hub__label">Write</span>
             </button>
@@ -216,12 +251,6 @@ function CapturePageInner() {
               placeholder="What is happening?"
               className="capture-hub__textarea"
               autoFocus
-            />
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Location (optional)"
-              className="capture-hub__location"
             />
             <VisibilityPicker value={visibility} onChange={setVisibility} className="mt-3" />
             <button
@@ -263,9 +292,9 @@ function CapturePageInner() {
           <VisibilityPicker value={visibility} onChange={setVisibility} className="capture-hub__visibility" />
         )}
 
-        <input ref={photoRef} type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={(e) => void handleFiles(e.target.files, "photo")} />
-        <input ref={videoRef} type="file" accept="video/*" capture="environment" multiple className="hidden" onChange={(e) => void handleFiles(e.target.files, "video")} />
-        <input ref={voiceRef} type="file" accept="audio/*" capture className="hidden" onChange={(e) => void handleFiles(e.target.files, "voice")} />
+        <input ref={photoRef} type="file" accept="image/*" capture="environment" multiple className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
+        <input ref={videoRef} type="file" accept="video/*" capture="environment" multiple className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
+        <input ref={voiceRef} type="file" accept="audio/*" capture className="hidden" onChange={(e) => void handleFiles(e.target.files)} />
       </div>
     </StorybookShell>
   );

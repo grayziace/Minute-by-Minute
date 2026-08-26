@@ -3,10 +3,15 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createEntryLocal, updateEntryLocal } from "@/lib/sync/engine";
-import { generateId, nowIso, formatNowDayUpper, formatNowDateUpper } from "@/lib/utils";
+import { generateId } from "@/lib/utils";
 import { StorybookShell } from "@/components/storybook/StorybookShell";
 import { EditModeGuard } from "@/components/layout/EditModeGuard";
 import { VisibilityPicker } from "@/components/ui/VisibilityPicker";
+import {
+  DateTimeFields,
+  combineDateTime,
+  splitDateTime,
+} from "@/components/ui/DateTimeFields";
 import type { Visibility } from "@/lib/types";
 import { db } from "@/lib/dexie/db";
 
@@ -20,6 +25,16 @@ function WritePageInner() {
   const [location, setLocation] = useState("");
   const [visibility, setVisibility] = useState<Visibility>("private");
   const [status, setStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const [captureDate, setCaptureDate] = useState(() => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return dateParam ?? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  });
+  const [captureTime, setCaptureTime] = useState(() => {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  });
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const entryId = useRef<string | null>(editId);
 
@@ -31,19 +46,28 @@ function WritePageInner() {
       setLocation(e.locationName ?? "");
       setVisibility(e.visibility);
       entryId.current = editId;
+      const { date, time } = splitDateTime(e.recordedAt);
+      setCaptureDate(date);
+      setCaptureTime(time);
     });
   }, [editId]);
+
+  useEffect(() => {
+    if (dateParam && !editId) setCaptureDate(dateParam);
+  }, [dateParam, editId]);
 
   const persist = useCallback(
     async (draft: string, loc: string) => {
       if (!draft.trim() && !entryId.current) return;
       setStatus("saving");
-      const ts = dateParam ? `${dateParam}T12:00:00.000Z` : nowIso();
+      const ts = combineDateTime(captureDate, captureTime);
       if (entryId.current) {
         await updateEntryLocal(entryId.current, {
           text: draft,
           locationName: loc.trim() || null,
           visibility,
+          recordedAt: ts,
+          recordedAtPrecision: "exact",
         });
       } else if (draft.trim()) {
         const id = generateId();
@@ -52,7 +76,7 @@ function WritePageInner() {
           id,
           userId: "local-user",
           recordedAt: ts,
-          recordedAtPrecision: dateParam ? "approximate" : "exact",
+          recordedAtPrecision: "exact",
           text: draft,
           moodNote: null,
           locationName: loc.trim() || null,
@@ -69,7 +93,7 @@ function WritePageInner() {
       }
       setStatus("saved");
     },
-    [dateParam, visibility],
+    [captureDate, captureTime, visibility],
   );
 
   useEffect(() => {
@@ -82,19 +106,18 @@ function WritePageInner() {
     };
   }, [text, location, persist]);
 
-  const now = new Date();
-
   return (
     <StorybookShell>
       <div className="write-page memory-appear">
         <header className="write-page__header">
-          <p className="write-page__day">{formatNowDayUpper(now)}</p>
-          <p className="write-page__date">{formatNowDateUpper(now)}</p>
-          <input
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="Location"
-            className="write-page__location"
+          <p className="storybook-widget__title">When & where</p>
+          <DateTimeFields
+            date={captureDate}
+            time={captureTime}
+            onDateChange={setCaptureDate}
+            onTimeChange={setCaptureTime}
+            location={location}
+            onLocationChange={setLocation}
           />
         </header>
 
@@ -114,7 +137,7 @@ function WritePageInner() {
           <button
             type="button"
             className="storybook-widget__link"
-            onClick={() => router.push(dateParam ? `/days/${dateParam}` : "/")}
+            onClick={() => router.push(dateParam || captureDate ? `/days/${dateParam ?? captureDate}` : "/")}
           >
             Done
           </button>

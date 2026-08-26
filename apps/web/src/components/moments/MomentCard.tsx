@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import type { Entry, MediaAsset } from "@/lib/types";
 import { EditableText } from "@/components/ui/EditableText";
 import { VisibilityPicker } from "@/components/ui/VisibilityPicker";
+import { DateTimeFields, combineDateTime, splitDateTime } from "@/components/ui/DateTimeFields";
 import { useExperienceMode } from "@/lib/experience/mode";
 import { patchEntry, removeEntry, momentKind } from "@/lib/entries-helpers";
 import { formatTime } from "@/lib/utils";
@@ -26,6 +28,10 @@ const KIND_LABEL: Record<string, string> = {
 
 export function MomentCard({ entry, media, variant = "note" }: MomentCardProps) {
   const { canEdit } = useExperienceMode();
+  const [editingWhen, setEditingWhen] = useState(false);
+  const initial = splitDateTime(entry.recordedAt);
+  const [momentDate, setMomentDate] = useState(initial.date);
+  const [momentTime, setMomentTime] = useState(initial.time);
   const kind = momentKind(entry, media);
   const image = media?.find((m) => m.mimeType.startsWith("image/"));
   const video = media?.find((m) => m.mimeType.startsWith("video/"));
@@ -33,6 +39,13 @@ export function MomentCard({ entry, media, variant = "note" }: MomentCardProps) 
 
   async function setVisibility(v: typeof entry.visibility) {
     await patchEntry(entry.id, { visibility: v });
+  }
+
+  async function saveWhen() {
+    await patchEntry(entry.id, {
+      recordedAt: combineDateTime(momentDate, momentTime),
+    });
+    setEditingWhen(false);
   }
 
   return (
@@ -45,7 +58,35 @@ export function MomentCard({ entry, media, variant = "note" }: MomentCardProps) 
       )}
     >
       <header className="moment-card__head">
-        <time className="moment-card__time">{formatTime(entry.recordedAt)}</time>
+        {editingWhen && canEdit ? (
+          <div className="moment-card__when-edit">
+            <DateTimeFields
+              date={momentDate}
+              time={momentTime}
+              onDateChange={setMomentDate}
+              onTimeChange={setMomentTime}
+              location={entry.locationName ?? ""}
+              onLocationChange={() => {}}
+              showLocation={false}
+            />
+            <button type="button" className="moment-card__link" onClick={() => void saveWhen()}>
+              Save time
+            </button>
+          </div>
+        ) : (
+          <>
+            <time className="moment-card__time">{formatTime(entry.recordedAt)}</time>
+            {canEdit && (
+              <button
+                type="button"
+                className="moment-card__when-btn"
+                onClick={() => setEditingWhen(true)}
+              >
+                Change
+              </button>
+            )}
+          </>
+        )}
         <span className="moment-card__kind">{KIND_LABEL[kind] ?? "Moment"}</span>
       </header>
 

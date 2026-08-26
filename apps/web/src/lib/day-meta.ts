@@ -9,9 +9,17 @@ export interface DayMeta {
   feeling: string;
   remember: string;
   favouriteMomentId: string;
+  completedAt: string;
 }
 
-const FIELDS = ["title", "summary", "feeling", "remember", "favouriteMomentId"] as const;
+const FIELDS = [
+  "title",
+  "summary",
+  "feeling",
+  "remember",
+  "favouriteMomentId",
+  "completedAt",
+] as const;
 
 export async function saveDayMetaField(
   dateKey: string,
@@ -19,6 +27,10 @@ export async function saveDayMetaField(
   value: string,
 ): Promise<void> {
   await db.syncMeta.put({ key: `day.${dateKey}.${field}`, value });
+}
+
+export function isDayCompleted(meta: DayMeta): boolean {
+  return !!meta.completedAt;
 }
 
 export function useDayMeta(dateKey: string) {
@@ -37,13 +49,18 @@ export function useDayMeta(dateKey: string) {
     feeling: "",
     remember: "",
     favouriteMomentId: "",
+    completedAt: "",
   };
 
   const save = async (field: keyof DayMeta, value: string) => {
     await saveDayMetaField(dateKey, field, value);
   };
 
-  return { meta, save };
+  const markComplete = async () => {
+    await saveDayMetaField(dateKey, "completedAt", new Date().toISOString());
+  };
+
+  return { meta, save, markComplete };
 }
 
 export function chapterNumberForDay(dateKey: string, allDayKeysAsc: string[]): number {

@@ -3,27 +3,68 @@
 import Link from "next/link";
 import { StorybookShell } from "@/components/storybook/StorybookShell";
 import { useExperienceMode } from "@/lib/experience/mode";
+import { useApprovedStories } from "@/lib/video/local-studio";
+import { formatDayHeading } from "@/lib/utils";
 
 export function MangaStoryPage() {
   const { canEdit } = useExperienceMode();
+  const chapters = useApprovedStories();
+
   return (
     <StorybookShell>
       <div className="frame-spread memory-appear">
-        <header className="mb-8">
+        <header className="studio-spread__header">
+          <Link href="/archive/ai" className="day-chapter__back">
+            ← Studios
+          </Link>
           <h1 className="spread-title">Story</h1>
-          <p className="spread-subtitle">Manga chapters interpreting your days.</p>
+          <p className="spread-subtitle">
+            Manga chapters from days you closed at bedtime — only the stories you chose.
+          </p>
         </header>
-        <div className="grid grid-cols-2 gap-3 max-w-lg mb-6">
-          <div className="aspect-[4/3] bg-gradient-to-br from-[#e8eef8] to-[#d8c8e0] border border-[var(--paper-edge)] rounded-sm p-2">
-            <p className="text-xs text-[var(--ink-soft)]">&ldquo;I didn&apos;t know where I was going…&rdquo;</p>
+
+        {!chapters?.length ? (
+          <div className="manga-empty paper-note paper-note--taped">
+            <p className="manga-empty__title">No chapters yet</p>
+            <p className="manga-empty__text">
+              Open a day, add your moments, then tap <strong>I went to bed</strong> when you sleep.
+              Pick which story ideas become manga — all, some, or none.
+            </p>
+            {canEdit && (
+              <Link href="/days" className="storybook-widget__link">
+                Open your days →
+              </Link>
+            )}
           </div>
-          <div className="aspect-[4/3] bg-gradient-to-br from-[#f0e8f0] to-[#e8dce8] border border-[var(--paper-edge)] rounded-sm" />
-          <div className="col-span-2 aspect-[2/1] bg-gradient-to-r from-[#f8f0e8] to-[#e8eef8] border border-[var(--paper-edge)] rounded-sm flex items-end p-3">
-            <p className="text-sm text-[var(--ink-soft)]">&ldquo;…but I ended up somewhere beautiful.&rdquo;</p>
+        ) : (
+          <div className="manga-chapters">
+            {chapters.map(({ dateKey, stories }) => (
+              <section key={dateKey} className="manga-chapter paper-note">
+                <header className="manga-chapter__head">
+                  <p className="storybook-widget__title">
+                    {formatDayHeading(`${dateKey}T12:00:00`)}
+                  </p>
+                  <Link href={`/days/${dateKey}`} className="storybook-widget__link">
+                    View day
+                  </Link>
+                </header>
+                {stories.map((story) => (
+                  <article key={story.id} className="manga-chapter__story">
+                    <p className="manga-chapter__tone">{story.tone}</p>
+                    <h2 className="manga-chapter__title">{story.title}</h2>
+                    <p className="manga-chapter__summary">{story.summary}</p>
+                    <div className="manga-chapter__panels">
+                      <div className="manga-panel manga-panel--a" />
+                      <div className="manga-panel manga-panel--b" />
+                      <div className="manga-panel manga-panel--wide">
+                        <p className="manga-panel__caption">{story.summary.slice(0, 80)}…</p>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </section>
+            ))}
           </div>
-        </div>
-        {canEdit && (
-          <Link href="/archive/ai" className="storybook-widget__link">create a story →</Link>
         )}
       </div>
     </StorybookShell>
