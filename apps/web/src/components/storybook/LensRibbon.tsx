@@ -2,10 +2,65 @@
 
 import { useEffect, useState } from "react";
 import { useExperienceMode, getShareViewUrl } from "@/lib/experience/mode";
+import { cn } from "@/lib/utils";
+
+function MoonIcon({ phase }: { phase: "writing" | "reading" }) {
+  if (phase === "writing") {
+    return (
+      <svg viewBox="0 0 64 64" className="lens-moon__svg" aria-hidden>
+        <defs>
+          <radialGradient id="moon-writing-glow" cx="40%" cy="35%" r="65%">
+            <stop offset="0%" stopColor="#fff9e8" />
+            <stop offset="45%" stopColor="#e8d8b0" />
+            <stop offset="100%" stopColor="#b8c8e0" />
+          </radialGradient>
+          <filter id="moon-soft-glow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+        <circle cx="32" cy="32" r="22" fill="url(#moon-writing-glow)" filter="url(#moon-soft-glow)" />
+        <circle cx="24" cy="26" r="3" fill="rgba(255,255,255,0.35)" />
+        <circle cx="38" cy="38" r="2" fill="rgba(255,255,255,0.2)" />
+        <circle cx="42" cy="24" r="1.2" fill="rgba(255,255,255,0.25)" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg viewBox="0 0 64 64" className="lens-moon__svg" aria-hidden>
+      <defs>
+        <radialGradient id="moon-reading-glow" cx="55%" cy="45%" r="60%">
+          <stop offset="0%" stopColor="#f0f4fc" />
+          <stop offset="55%" stopColor="#c8d4e8" />
+          <stop offset="100%" stopColor="#98aac8" />
+        </radialGradient>
+        <mask id="moon-crescent-mask">
+          <rect width="64" height="64" fill="white" />
+          <circle cx="42" cy="28" r="20" fill="black" />
+        </mask>
+      </defs>
+      <circle
+        cx="30"
+        cy="32"
+        r="22"
+        fill="url(#moon-reading-glow)"
+        mask="url(#moon-crescent-mask)"
+      />
+      <circle cx="48" cy="18" r="1" fill="#c8a878" className="lens-moon__star" />
+      <circle cx="54" cy="28" r="0.7" fill="#c8a878" className="lens-moon__star lens-moon__star--delay" />
+      <circle cx="44" cy="12" r="0.5" fill="#c8a878" className="lens-moon__star lens-moon__star--delay2" />
+    </svg>
+  );
+}
 
 export function LensRibbon() {
   const { mode, setMode, isOwner, viewLocked, isViewMode } = useExperienceMode();
   const [shareUrl, setShareUrl] = useState("/?view=1");
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     setShareUrl(getShareViewUrl());
@@ -15,34 +70,50 @@ export function LensRibbon() {
 
   const isWriting = mode === "edit";
 
-  return (
-    <aside className="lens-ribbon" aria-label="Switch between writing and reading lens">
-      <div className="lens-ribbon__stack">
-        <button
-          type="button"
-          className={`lens-ribbon__tab ${isWriting ? "lens-ribbon__tab--active" : ""}`}
-          onClick={() => setMode("edit")}
-          aria-pressed={isWriting}
-        >
-          <span className="lens-ribbon__icon" aria-hidden>✎</span>
-          <span className="lens-ribbon__label">Writing</span>
-        </button>
+  function toggle() {
+    setMode(isWriting ? "view" : "edit");
+    setExpanded(false);
+  }
 
-        <button
-          type="button"
-          className={`lens-ribbon__tab lens-ribbon__tab--read ${!isWriting ? "lens-ribbon__tab--active" : ""}`}
-          onClick={() => setMode("view")}
-          aria-pressed={isViewMode}
-        >
-          <span className="lens-ribbon__icon" aria-hidden>◉</span>
-          <span className="lens-ribbon__label">Reading</span>
-        </button>
+  return (
+    <aside className="lens-moon" aria-label="Switch between writing and reading">
+      <button
+        type="button"
+        className={cn(
+          "lens-moon__orb",
+          isWriting ? "lens-moon__orb--writing" : "lens-moon__orb--reading",
+        )}
+        onClick={toggle}
+        aria-pressed={isWriting}
+        title={isWriting ? "Preview what others see" : "Return to writing mode"}
+      >
+        <span className="lens-moon__halo" aria-hidden />
+        <MoonIcon phase={isWriting ? "writing" : "reading"} />
+      </button>
+
+      <div className="lens-moon__caption">
+        <p className="lens-moon__mode">{isWriting ? "Writing" : "Reading"}</p>
+        <p className="lens-moon__hint">
+          {isWriting ? "Tap the moon to preview" : "Tap the moon to edit"}
+        </p>
       </div>
 
       {isViewMode && (
-        <p className="lens-ribbon__share" title="Share link for family and friends">
-          Share: {shareUrl.replace(/^https?:\/\//, "")}
-        </p>
+        <div className="lens-moon__share">
+          <button
+            type="button"
+            className="lens-moon__share-toggle"
+            onClick={() => setExpanded((v) => !v)}
+            aria-expanded={expanded}
+          >
+            {expanded ? "Hide share link" : "Share with family →"}
+          </button>
+          {expanded && (
+            <p className="lens-moon__share-url" title={shareUrl}>
+              {shareUrl.replace(/^https?:\/\//, "")}
+            </p>
+          )}
+        </div>
       )}
     </aside>
   );

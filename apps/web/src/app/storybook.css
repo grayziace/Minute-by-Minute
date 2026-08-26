@@ -728,87 +728,163 @@ html[data-experience="view"] .edit-only {
   border-bottom: 1px solid var(--periwinkle);
 }
 
-/* ─── Lens ribbon (writing ↔ reading) ─── */
-.lens-ribbon {
+/* ─── Moon lens (writing ↔ reading) ─── */
+.lens-moon {
   position: absolute;
-  top: 1.5rem;
-  right: 0;
+  top: 1.25rem;
+  right: 1.25rem;
   z-index: 40;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  gap: 0.35rem;
-  pointer-events: none;
-}
-
-.lens-ribbon__stack {
-  display: flex;
-  flex-direction: column;
-  pointer-events: auto;
-}
-
-.lens-ribbon__tab {
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 0.15rem;
-  width: 68px;
-  padding: 0.6rem 0.4rem;
-  border: 1px solid var(--paper-edge);
-  border-right: none;
-  border-radius: 8px 0 0 8px;
-  background: linear-gradient(90deg, var(--parchment-deep), var(--ivory));
-  color: var(--ink-muted);
+  gap: 0.5rem;
+  max-width: 140px;
+  text-align: center;
+}
+
+.lens-moon__orb {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: none;
+  background: transparent;
   cursor: pointer;
-  box-shadow: -4px 2px 14px rgba(60, 50, 30, 0.08);
-  transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+  transition: transform 0.45s ease;
 }
 
-.lens-ribbon__tab + .lens-ribbon__tab {
-  margin-top: -1px;
+.lens-moon__orb:hover {
+  transform: scale(1.06);
 }
 
-.lens-ribbon__tab:hover {
-  color: var(--ink-soft);
-  transform: translateX(-3px);
+.lens-moon__orb:active {
+  transform: scale(0.96);
 }
 
-.lens-ribbon__tab--active {
-  background: var(--cream);
-  color: var(--ink);
-  transform: translateX(-6px);
-  box-shadow: -6px 4px 18px rgba(60, 50, 30, 0.12);
-  z-index: 2;
+.lens-moon__halo {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  opacity: 0.7;
+  transition: background 0.5s ease, box-shadow 0.5s ease;
 }
 
-.lens-ribbon__tab--read.lens-ribbon__tab--active {
-  background: linear-gradient(90deg, #eef2f8, var(--cream));
+.lens-moon__orb--writing .lens-moon__halo {
+  background: radial-gradient(circle, rgba(232, 208, 160, 0.45), transparent 70%);
+  box-shadow: 0 0 24px rgba(200, 168, 120, 0.35);
 }
 
-.lens-ribbon__icon {
-  font-size: 0.85rem;
-  line-height: 1;
+.lens-moon__orb--reading .lens-moon__halo {
+  background: radial-gradient(circle, rgba(158, 180, 212, 0.4), transparent 70%);
+  box-shadow: 0 0 20px rgba(120, 150, 200, 0.3);
 }
 
-.lens-ribbon__label {
-  font-size: 0.45rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
+.lens-moon__svg {
+  width: 52px;
+  height: 52px;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 2px 6px rgba(60, 50, 40, 0.15));
+  transition: transform 0.6s ease;
 }
 
-.lens-ribbon__share {
-  pointer-events: auto;
-  max-width: 120px;
+.lens-moon__orb--reading .lens-moon__svg {
+  transform: rotate(-8deg);
+}
+
+.lens-moon__star {
+  animation: star-twinkle 3s ease-in-out infinite;
+}
+
+.lens-moon__star--delay {
+  animation-delay: 0.9s;
+}
+
+.lens-moon__star--delay2 {
+  animation-delay: 1.8s;
+}
+
+.lens-moon__caption {
   padding: 0.35rem 0.5rem;
-  margin-right: 0.25rem;
-  font-size: 0.45rem;
-  letter-spacing: 0.06em;
-  line-height: 1.4;
+  background: rgba(255, 252, 245, 0.75);
+  border: 1px solid var(--paper-edge);
+  border-radius: 3px;
+  box-shadow: var(--paper-shadow);
+}
+
+.lens-moon__mode {
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.lens-moon__hint {
+  margin-top: 0.2rem;
+  font-size: 0.5rem;
+  letter-spacing: 0.04em;
+  line-height: 1.35;
   color: var(--ink-muted);
-  background: rgba(255, 252, 245, 0.85);
+}
+
+.lens-moon__share {
+  width: 100%;
+}
+
+.lens-moon__share-toggle {
+  width: 100%;
+  padding: 0.35rem 0.5rem;
   border: 1px dashed var(--paper-edge);
   border-radius: 2px;
+  background: rgba(255, 252, 245, 0.85);
+  font-size: 0.45rem;
+  letter-spacing: 0.08em;
+  color: var(--periwinkle-deep);
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.lens-moon__share-toggle:hover {
+  background: var(--cream);
+}
+
+.lens-moon__share-url {
+  margin-top: 0.35rem;
+  padding: 0.35rem 0.45rem;
+  font-size: 0.42rem;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  word-break: break-all;
+  color: var(--ink-muted);
+  background: var(--ivory);
+  border: 1px solid var(--paper-edge);
+  border-radius: 2px;
+}
+
+@media (max-width: 768px) {
+  .lens-moon {
+    top: 0.75rem;
+    right: 0.75rem;
+    max-width: 112px;
+  }
+
+  .lens-moon__orb {
+    width: 48px;
+    height: 48px;
+  }
+
+  .lens-moon__svg {
+    width: 44px;
+    height: 44px;
+  }
+
+  .lens-moon__hint {
+    display: none;
+  }
 }
 
 /* ─── Reading lens ─── */
