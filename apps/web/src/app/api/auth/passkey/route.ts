@@ -9,7 +9,7 @@ import {
   setSessionCookie,
   getOrCreateDefaultUser,
 } from "@/lib/auth/session";
-import { getRpConfig, getSetupError } from "@/lib/auth/rp-config";
+import { getRpConfig, getSetupError, friendlyPasskeyError } from "@/lib/auth/rp-config";
 
 const CHALLENGE_COOKIE = "mbm_reg_challenge";
 
@@ -82,8 +82,14 @@ export async function POST(request: Request) {
       const { credential } = verification.registrationInfo;
       const { getDb, schema } = await import("@/lib/db");
       const db = getDb();
+
+      const credentialId =
+        typeof credential.id === "string"
+          ? credential.id
+          : Buffer.from(credential.id).toString("base64url");
+
       await db.insert(schema.passkeyCredentials).values({
-        id: credential.id,
+        id: credentialId,
         userId,
         publicKey: Buffer.from(credential.publicKey).toString("base64"),
         counter: credential.counter,
@@ -99,10 +105,6 @@ export async function POST(request: Request) {
     return apiError("Unknown action", 400);
   } catch (err) {
     console.error("Passkey registration error:", err);
-    const message =
-      err instanceof Error && err.message.includes("DATABASE_URL")
-        ? "Database not configured. Add DATABASE_URL in Vercel → Settings → Environment Variables."
-        : "Something went wrong on the server. Check Vercel logs.";
-    return apiError(message);
+    return apiError(friendlyPasskeyError(err));
   }
 }

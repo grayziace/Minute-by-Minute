@@ -5,7 +5,7 @@ import {
   verifyAuthentication,
 } from "@/lib/auth/passkey";
 import { createSession, setSessionCookie } from "@/lib/auth/session";
-import { getSetupError } from "@/lib/auth/rp-config";
+import { getSetupError, friendlyPasskeyError } from "@/lib/auth/rp-config";
 
 const CHALLENGE_COOKIE = "mbm_auth_challenge";
 
@@ -59,6 +59,6 @@ export async function POST(request: Request) {
     return apiError("Unknown action", 400);
   } catch (err) {
     console.error("Passkey login error:", err);
-    return apiError("Something went wrong on the server. Check Vercel logs.");
+    return apiError(friendlyPasskeyError(err));
   }
 }
