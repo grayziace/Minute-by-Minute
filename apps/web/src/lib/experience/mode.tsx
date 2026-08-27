@@ -16,7 +16,7 @@ interface ExperienceContextValue {
   toggleMode: () => void;
   isViewMode: boolean;
   isEditMode: boolean;
-  /** Signed in with passkey — you, the archive owner */
+  /** Signed in — you, the archive owner */
   isOwner: boolean;
   /** Visitor or share link — cannot switch to edit */
   viewLocked: boolean;

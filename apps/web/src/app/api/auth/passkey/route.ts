@@ -4,6 +4,7 @@ import {
   getRegistrationOptions,
   hasPasskeys,
 } from "@/lib/auth/passkey";
+import { defaultUserHasPassword } from "@/lib/auth/password-user";
 import {
   createSession,
   setSessionCookie,
@@ -25,7 +26,8 @@ export async function GET() {
 
   try {
     const registered = await hasPasskeys();
-    return NextResponse.json({ registered });
+    const hasPassword = await defaultUserHasPassword();
+    return NextResponse.json({ registered, hasPassword });
   } catch {
     return NextResponse.json({
       registered: false,

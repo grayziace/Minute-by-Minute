@@ -167,7 +167,7 @@ export function BackupPanel() {
       {message && <p className="backup-panel__message">{message}</p>}
 
       <p className="backup-panel__hint">
-        Sign in with your passkey so backups attach to your account. Keep{" "}
+        Sign in with your password so backups attach to your account. Keep{" "}
         <code>DATABASE_URL</code> and R2 storage configured on Vercel — code changes never delete your archive.
       </p>
     </section>
