@@ -285,6 +285,25 @@ export const scrapbookLayouts = pgTable("scrapbook_layouts", {
     .defaultNow(),
 });
 
+/** Key/value store for characters, day meta, frame favourites, page notes, etc. */
+export const userMeta = pgTable(
+  "user_meta",
+  {
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    value: text("value").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.userId, table.key] }),
+    index("user_meta_user_idx").on(table.userId),
+  ],
+);
+
 // Phase 2
 export const people = pgTable("people", {
   id: uuid("id").primaryKey().defaultRandom(),

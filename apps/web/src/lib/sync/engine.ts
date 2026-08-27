@@ -1,4 +1,6 @@
 import { db, type SyncQueueItem } from "@/lib/dexie/db";
+import { pullSyncMetaFromServer, pushSyncMetaToServer } from "@/lib/sync/meta-sync";
+import { hydrateMissingMediaBlobs } from "@/lib/sync/media-hydrate";
 import type { Entry } from "@/lib/types";
 
 const MAX_RETRIES = 5;
@@ -152,10 +154,13 @@ export async function hydrateFromServer(): Promise<void> {
     if (data.tags?.length) {
       await db.tags.bulkPut(data.tags);
     }
+    await pullSyncMetaFromServer();
     await db.syncMeta.put({
       key: "lastHydratedAt",
       value: new Date().toISOString(),
     });
+    void hydrateMissingMediaBlobs();
+    void pushSyncMetaToServer();
   } catch {
     // silent — offline or unauthenticated
   }

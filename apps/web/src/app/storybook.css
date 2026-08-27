@@ -2533,3 +2533,112 @@ html[data-experience="edit"] .editable-text:hover {
   margin-right: 0.5rem;
 }
 
+/* ─── Backup panel ─── */
+.backup-panel {
+  margin-bottom: 1.5rem;
+}
+
+.backup-panel__intro {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+
+.backup-panel__stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.75rem 1.25rem;
+  margin: 1.25rem 0;
+  font-size: 0.85rem;
+}
+
+.backup-panel__stats dt {
+  font-size: 0.45rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.backup-panel__stats dd {
+  margin: 0.2rem 0 0;
+  color: var(--ink);
+}
+
+.backup-panel__warn {
+  color: var(--rose);
+}
+
+.backup-panel__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.backup-panel__primary {
+  padding: 0.7rem 1.25rem;
+  border: 1px solid var(--sky);
+  border-radius: 4px;
+  background: linear-gradient(135deg, var(--sky-soft), #fff);
+  font-size: 0.5rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.backup-panel__primary:disabled {
+  opacity: 0.5;
+}
+
+.backup-panel__ghost {
+  padding: 0.7rem 1.25rem;
+  border: 1px solid var(--paper-edge);
+  border-radius: 4px;
+  background: transparent;
+  font-size: 0.5rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.backup-panel__exports {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.backup-panel__link {
+  border: none;
+  background: none;
+  font-size: 0.45rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--periwinkle-deep);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.backup-panel__progress,
+.backup-panel__message {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+
+.backup-panel__hint {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--paper-edge);
+  font-size: 0.75rem;
+  color: var(--ink-muted);
+  line-height: 1.5;
+}
+
+.backup-panel__hint code {
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 0.1rem 0.3rem;
+  border-radius: 2px;
+}
+

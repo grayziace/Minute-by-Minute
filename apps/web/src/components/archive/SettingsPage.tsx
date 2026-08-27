@@ -3,16 +3,19 @@
 import { StorybookShell } from "@/components/storybook/StorybookShell";
 import { ShareLinkPanel } from "@/components/layout/ShareLinkPanel";
 import { EditModeGuard } from "@/components/layout/EditModeGuard";
+import { BackupPanel } from "@/components/archive/BackupPanel";
 
 export function SettingsPage() {
   return (
     <EditModeGuard>
       <StorybookShell>
-        <div className="frame-spread memory-appear max-w-lg">
-          <header className="mb-8">
-            <h1 className="spread-title">Settings</h1>
-            <p className="spread-subtitle">Your archive, your rules.</p>
+        <div className="page-spread frame-spread memory-appear">
+          <header className="page-spread__header">
+            <h1 className="spread-title spread-title--vivid">Settings</h1>
+            <p className="spread-subtitle">Your archive, your rules — backed up forever.</p>
           </header>
+
+          <BackupPanel />
 
           <ShareLinkPanel />
 
