@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  readKnockUnlocked,
+  isProductionGuest,
+} from "@/lib/experience/secret-knock";
 import {
   startRegistration,
   startAuthentication,
@@ -22,6 +27,7 @@ function passkeyErrorMessage(err: unknown): string {
 }
 
 export function LoginPage() {
+  const router = useRouter();
   const [registered, setRegistered] = useState<boolean | null>(null);
   const [hasPassword, setHasPassword] = useState<boolean | null>(null);
   const [setupError, setSetupError] = useState<string | null>(null);
@@ -30,6 +36,16 @@ export function LoginPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPasskey, setShowPasskey] = useState(false);
+
+  useEffect(() => {
+    if (isProductionGuest() && !readKnockUnlocked()) {
+      void fetch("/api/auth/me")
+        .then((r) => r.json())
+        .then((d: { authenticated?: boolean }) => {
+          if (!d.authenticated) router.replace("/");
+        });
+    }
+  }, [router]);
 
   useEffect(() => {
     fetch("/api/auth/passkey")

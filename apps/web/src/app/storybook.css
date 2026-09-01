@@ -1160,6 +1160,65 @@ html[data-experience="edit"] .editable-text:hover {
   background: var(--cream);
   border: 1px solid var(--paper-edge);
   box-shadow: var(--paper-shadow), 8px 12px 40px rgba(60, 50, 30, 0.1);
+  position: relative;
+}
+
+.visitor-cover__page--unlocking {
+  animation: cover-unlock 0.65s ease-out forwards;
+}
+
+@keyframes cover-unlock {
+  to {
+    box-shadow:
+      0 0 40px rgba(200, 180, 255, 0.45),
+      var(--paper-shadow),
+      8px 12px 40px rgba(60, 50, 30, 0.1);
+    transform: scale(1.02);
+  }
+}
+
+.visitor-cover__unlock-flash {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 240, 255, 0.5), transparent 70%);
+  pointer-events: none;
+  animation: cover-flash 0.6s ease-out forwards;
+}
+
+@keyframes cover-flash {
+  from { opacity: 0.8; }
+  to { opacity: 0; }
+}
+
+.visitor-knock {
+  position: absolute;
+  width: 2.5rem;
+  height: 2.5rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: default;
+  z-index: 2;
+}
+
+.visitor-knock--tl { top: 0; left: 0; }
+.visitor-knock--tr { top: 0; right: 0; }
+.visitor-knock--br { bottom: 0; right: 0; }
+.visitor-knock--bl { bottom: 0; left: 0; }
+
+.visitor-knock--lit::after {
+  content: "";
+  position: absolute;
+  inset: 0.35rem;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(200, 180, 255, 0.55), transparent 70%);
+  animation: knock-spark 0.5s ease-out;
+}
+
+@keyframes knock-spark {
+  from { opacity: 1; transform: scale(0.6); }
+  to { opacity: 0; transform: scale(1.4); }
 }
 
 .visitor-cover__eyebrow {

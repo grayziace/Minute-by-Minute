@@ -81,7 +81,7 @@ function MoonIcon({ phase }: { phase: "writing" | "reading" | "signin" }) {
 }
 
 export function LensRibbon() {
-  const { mode, setMode, isOwner, viewLocked, isViewMode } = useExperienceMode();
+  const { mode, setMode, isOwner, viewLocked, isViewMode, knockUnlocked } = useExperienceMode();
   const [shareUrl, setShareUrl] = useState("/?view=1");
   const [expanded, setExpanded] = useState(false);
 
@@ -89,22 +89,24 @@ export function LensRibbon() {
     setShareUrl(getShareViewUrl());
   }, []);
 
-  if (viewLocked) return null;
+  if (viewLocked && isOwner) return null;
 
   if (!isOwner) {
+    if (!knockUnlocked) return null;
     return (
       <aside className="lens-moon" aria-label="Sign in to edit">
-        <Link href="/login" className="lens-moon__orb lens-moon__orb--signin" title="Sign in to edit">
+        <Link href="/login" className="lens-moon__orb lens-moon__orb--signin" title="Sign in">
           <span className="lens-moon__halo" aria-hidden />
           <MoonIcon phase="signin" />
         </Link>
         <div className="lens-moon__caption">
           <p className="lens-moon__mode">Sign in</p>
-          <p className="lens-moon__hint">Tap the moon to edit</p>
         </div>
       </aside>
     );
   }
+
+  if (viewLocked) return null;
 
   const isWriting = mode === "edit";
 

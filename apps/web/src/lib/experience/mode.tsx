@@ -7,6 +7,11 @@ import {
   useEffect,
   useState,
 } from "react";
+import {
+  readKnockUnlocked,
+  setKnockUnlocked,
+  isProductionGuest,
+} from "@/lib/experience/secret-knock";
 
 export type ExperienceMode = "edit" | "view";
 
@@ -20,6 +25,9 @@ interface ExperienceContextValue {
   isOwner: boolean;
   /** Visitor or share link — cannot switch to edit */
   viewLocked: boolean;
+  /** Secret knock passed this session — may open sign-in */
+  knockUnlocked: boolean;
+  unlockKnock: () => void;
   canEdit: boolean;
 }
 
@@ -39,21 +47,27 @@ export function ExperienceModeProvider({
 }: {
   children: React.ReactNode;
 }) {
-  const [mode, setModeState] = useState<ExperienceMode>("edit");
+  const [mode, setModeState] = useState<ExperienceMode>("view");
   const [isOwner, setIsOwner] = useState(false);
-  const [viewLocked, setViewLocked] = useState(false);
+  const [viewLocked, setViewLocked] = useState(true);
+  const [knockUnlocked, setKnockUnlockedState] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
+  const unlockKnock = useCallback(() => {
+    setKnockUnlocked();
+    setKnockUnlockedState(true);
+  }, []);
+
   useEffect(() => {
+    setKnockUnlockedState(readKnockUnlocked());
+
     const urlLocked = readViewLockedFromUrl();
     const storedLocked = localStorage.getItem(VIEW_LOCKED_KEY) === "1";
-    const locked = urlLocked || storedLocked;
+    const shareLocked = urlLocked || storedLocked;
 
     if (urlLocked) {
       localStorage.setItem(VIEW_LOCKED_KEY, "1");
     }
-
-    setViewLocked(locked);
 
     void fetch("/api/auth/me")
       .then((r) => r.json())
@@ -62,8 +76,12 @@ export function ExperienceModeProvider({
           typeof window !== "undefined" &&
           (window.location.hostname === "localhost" ||
             window.location.hostname === "127.0.0.1");
-        const owner = !!data.authenticated || (isLocalDev && !locked);
+        const owner = !!data.authenticated || (isLocalDev && !shareLocked);
         setIsOwner(owner);
+
+        const guestOnLive = isProductionGuest() && !owner;
+        const locked = shareLocked || guestOnLive;
+        setViewLocked(locked);
 
         if (locked || !owner) {
           setModeState("view");
@@ -80,12 +98,14 @@ export function ExperienceModeProvider({
           typeof window !== "undefined" &&
           (window.location.hostname === "localhost" ||
             window.location.hostname === "127.0.0.1");
-        if (locked || !isLocalDev) {
+        const guestOnLive = isProductionGuest();
+        if (shareLocked || guestOnLive || !isLocalDev) {
           setModeState("view");
           setViewLocked(true);
           document.documentElement.dataset.experience = "view";
         } else {
           setIsOwner(true);
+          setViewLocked(false);
           setModeState("edit");
           document.documentElement.dataset.experience = "edit";
         }
@@ -96,7 +116,6 @@ export function ExperienceModeProvider({
   const setMode = useCallback(
     (next: ExperienceMode) => {
       if (viewLocked || !isOwner) return;
-      if (next === "edit" && !isOwner) return;
       setModeState(next);
       localStorage.setItem(MODE_STORAGE_KEY, next);
       document.documentElement.dataset.experience = next;
@@ -105,18 +124,18 @@ export function ExperienceModeProvider({
   );
 
   useEffect(() => {
-    if (hydrated && viewLocked) {
+    if (hydrated && viewLocked && !isOwner) {
       setModeState("view");
       document.documentElement.dataset.experience = "view";
     }
-  }, [hydrated, viewLocked]);
+  }, [hydrated, viewLocked, isOwner]);
 
   const toggleMode = useCallback(() => {
     if (viewLocked || !isOwner) return;
     setMode(mode === "edit" ? "view" : "edit");
   }, [mode, setMode, viewLocked, isOwner]);
 
-  const isViewMode = mode === "view";
+  const isViewMode = mode === "view" || !isOwner;
   const isEditMode = mode === "edit" && isOwner && !viewLocked;
   const canEdit = isOwner && !viewLocked && mode === "edit";
 
@@ -130,6 +149,8 @@ export function ExperienceModeProvider({
         isEditMode,
         isOwner,
         viewLocked,
+        knockUnlocked,
+        unlockKnock,
         canEdit,
       }}
     >
